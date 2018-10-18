@@ -6,9 +6,9 @@ import os
 import npyscreen
 from license.edit_license import EditLicense, ApplyLicense, ReturnLicense, LicenseProxy, LicenseOffline
 from workers.edit_workers import EditWorkers
-from network.edit_network import EditNetwork, NetworkDhcp, NetworkStatic, NetworkTools
+from network.edit_network import EditNetwork, NetworkDhcp, NetworkStatic
 from docker.docker_services import DockerServices, LogViewer
-from sm_diagnostics.diagnostics import DiagnosticsForm
+from diagnostics.diagnostics import DiagnosticsForm
 from error_popup import ErrorPopup
 from main_menu import MainMenu, Shutdown, Reboot
 
@@ -47,7 +47,6 @@ class ApplianceControlApp(npyscreen.NPSAppManaged):
         self.addForm('NETWORK', EditNetwork)
         self.addForm('NETWORK/DHCP', NetworkDhcp)
         self.addForm('NETWORK/STATIC_IP', NetworkStatic)
-        self.addForm('NETWORK/TOOLS', NetworkTools)
 
         self.addForm('SERVICES', DockerServices)
         self.addFormClass('SERVICES/LOGVIEWER', LogViewer)

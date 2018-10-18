@@ -22,6 +22,7 @@ class LogViewer(npyscreen.FormMuttActiveTraditional):
     def create(self):
         super().create()
         self.add_handlers({'q': self.parentApp.switchFormPrevious})
+        self.wStatus2.value = "'q' to quit. 'l' to search in text."
 
     def beforeEditing(self):
         self.wMain.values = log_entries

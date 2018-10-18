@@ -12,7 +12,6 @@ class NetworkSubMenuList(npyscreen.MultiLineAction):
         self.form_index = { 
             "Use DHCP" : "NETWORK/DHCP",
             "Configure static IP": "NETWORK/STATIC_IP",
-            "Network tools": "NETWORK/TOOLS",
             }
         self.values = list(self.form_index.keys())
             
@@ -63,7 +62,3 @@ class NetworkStatic(_BaseNetworkForm):
     def on_ok(self):
         print(self.wg_max_workers.value)
         super().on_ok()
-
-class NetworkTools(_BaseNetworkForm):
-    def create(self):
-        self.wg_max_workers = self.add(npyscreen.TitleText, width=80, name="network", value="foo")

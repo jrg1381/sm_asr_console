@@ -1,5 +1,6 @@
 import npyscreen
 import subprocess
+import curses
 from error_handler import error_handler
 
 
@@ -15,14 +16,20 @@ class DiagnosticsForm(npyscreen.FormMuttActiveTraditionalWithMenus):
 
     def __init__(self, *args, **kwargs):
         super(DiagnosticsForm, self).__init__(*args, **kwargs)
+        self.most_recent_command = None
 
     def beforeEditing(self):
         self.root_menu()
 
+    def f5_refresh(self, data):
+        if self.most_recent_command:
+            self.execute_shell(self.most_recent_command)
+
     def create(self):
         super().create()
         self.add_handlers({'q': self.parentApp.switchFormPrevious})
-        self.wStatus2.value = "CTRL-X to display menu. 'q' to quit. 'l' to search in text."
+        self.add_handlers({curses.KEY_F5: self.f5_refresh})
+        self.wStatus2.value = "CTRL-X to display menu. 'q' to quit. 'l' to search in text. F5 to re-run command."
         self.m1 = self.add_menu(name="Shell commands", shortcut='m')
 
         commands = (
@@ -47,7 +54,8 @@ class DiagnosticsForm(npyscreen.FormMuttActiveTraditionalWithMenus):
 
     @error_handler("Subprocess error")
     def execute_shell(self, *args):
-        cmd = args[0].split(' ')
+        self.most_recent_command = args[0]
+        cmd = self.most_recent_command.split(' ')
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as cpe:
