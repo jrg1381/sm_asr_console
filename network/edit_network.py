@@ -3,6 +3,7 @@ import npyscreen
 import curses
 from error_handler import error_handler
 from swagger_client import ManagementApi
+from swagger_client.models import ManagementIpAddressInfo
 
 
 class NetworkSubMenuList(npyscreen.MultiLineAction):
@@ -19,7 +20,7 @@ class NetworkSubMenuList(npyscreen.MultiLineAction):
         self.parent.parentApp.switchForm(self.form_index[act_on_this])  
 
 class NetworkDhcp(npyscreen.ActionPopup):
-    @error_handler("doom")
+    @error_handler("Management API")
     def enable_dhcp(self):
         self.parentApp.management_api.set_dhcp()
 
@@ -54,11 +55,26 @@ class EditNetwork(_BaseNetworkForm):
         super().create()
         self.wg_network_options = self.add(NetworkSubMenuList, rely=1)
 
-class NetworkStatic(_BaseNetworkForm):
+class NetworkStatic(npyscreen.ActionPopup):
+    @error_handler("Management API")
+    def _change_network(self):
+        request = ManagementIpAddressInfo(
+            nameservers=self.wg_nameservers.value.split(' '),
+            netmask=self.wg_netmask.value,
+            gateway=self.wg_gateway.value,
+            address=self.wg_ip_address.value)
+        response = self.parentApp.management_api.set_manual_ip_address(request)
+
     def create(self):
-        self.value = None
-        self.wg_max_workers = self.add(npyscreen.TitleText, width=80, name="network", value="foo")
-    
+        super().create()
+        self.wg_nameservers = self.add(npyscreen.TitleText, rely=1, name="Nameservers (space separated)")
+        self.wg_netmask = self.add(npyscreen.TitleText, rely=3, name="Netmask (e.g. 255.255.255.0)")
+        self.wg_gateway = self.add(npyscreen.TitleText, rely=5, name="Gateway (e.g. 192.168.1.1)")
+        self.wg_ip_address = self.add(npyscreen.TitleText, rely=7, name="IP address (e.g. 192.168.1.40)")
+
     def on_ok(self):
-        print(self.wg_max_workers.value)
-        super().on_ok()
+        self._change_network()
+        self.parentApp.switchFormPrevious()
+
+    def on_cancel(self):
+        self.parentApp.switchFormPrevious()
