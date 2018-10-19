@@ -1,1 +1,6 @@
-npyscreen
+npyscreen==4.10.5
+certifi==2018.8.24
+netifaces==0.10.7
+six==1.11.0
+urllib3==1.23
+pylint==1.8.3

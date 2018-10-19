@@ -34,26 +34,18 @@ class NetworkDhcp(npyscreen.ActionPopup):
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
 
-class _BaseNetworkForm(npyscreen.ActionFormV2):
-    def h_refresh(self):
-        pass
-
+class EditNetwork(npyscreen.ActionFormV2):
     def create(self):
+        super().create()
         self.management_api = self.parentApp.management_api
         self.licensing_api = self.parentApp.licensing_api
-        self.add_handlers({curses.KEY_F5: self.h_refresh})
+        self.wg_network_options = self.add(NetworkSubMenuList, rely=1)
 
     def on_ok(self):
         self.parentApp.switchFormPrevious()
 
     def on_cancel(self):
         self.parentApp.switchFormPrevious()  
-
-
-class EditNetwork(_BaseNetworkForm):
-    def create(self):
-        super().create()
-        self.wg_network_options = self.add(NetworkSubMenuList, rely=1)
 
 class NetworkStatic(npyscreen.ActionPopup):
     @error_handler("Management API")
