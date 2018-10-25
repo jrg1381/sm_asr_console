@@ -1,5 +1,6 @@
 # encoding: utf-8
 import sys
+import os
 import datetime
 import asyncio
 import curses
@@ -7,10 +8,8 @@ import npyscreen
 from error_handler import error_handler
 from main_menu_list import MainMenuList
 from widgets.net_interfaces_widget import NetInterfacesWidget
-from swagger_client import ApiClient, Configuration, ManagementApi, LicensingApi
-from swagger_client.rest import ApiException
 
-APP_NAME = "Realtime ASR"
+APP_NAME = "{} ASR".format(os.environ.get("APP_NAME", "Speechmatics"))
 
 
 class MainMenu(npyscreen.ActionFormV2):
@@ -87,13 +86,14 @@ class MainMenu(npyscreen.ActionFormV2):
         self.wg_options.update()
 
     def create(self):
+        columns = curses.COLS
         self.management_api = self.parentApp.management_api
         self.licensing_api = self.parentApp.licensing_api
 
         self.add_handlers({curses.KEY_F5: self.h_refresh})
 
-        centred_title = "{:^78}".format(APP_NAME)
-        self.title = self.add(npyscreen.FixedText, name=APP_NAME, value=centred_title, editable=False, relx=1, rely=1, width=80)
+        centred_title = ("{:^" + str(columns) + "}").format(APP_NAME)
+        self.title = self.add(npyscreen.FixedText, name=APP_NAME, value=centred_title, editable=False, relx=1, rely=1, width=int(columns))
         self.wg_options = self.add(MainMenuList, name="main_menu", max_width=12, rely=2)
         self.system_status_bar = self.add(npyscreen.BoxTitle, name="System status", editable=False, rely=2, relx=14, max_height=4)
         self.network_status_bar = self.add(NetInterfacesWidget, name="Network status", editable=False, rely=6, relx=14, max_height=8)

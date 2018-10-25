@@ -1,7 +1,6 @@
 # coding: utf-8
 
 # flake8: noqa
-
 """
     Speechmatics Management API
 
@@ -15,14 +14,7 @@
 
 from __future__ import absolute_import
 
-# import apis into sdk package
-from swagger_client.api.licensing_api import LicensingApi
-from swagger_client.api.management_api import ManagementApi
-
-# import ApiClient
-from swagger_client.api_client import ApiClient
-from swagger_client.configuration import Configuration
-# import models into sdk package
+# import models into model package
 from swagger_client.models.example_bool_response import ExampleBoolResponse
 from swagger_client.models.example_hello_response import ExampleHelloResponse
 from swagger_client.models.example_job_response import ExampleJobResponse
@@ -57,7 +49,6 @@ from swagger_client.models.management_license_status import ManagementLicenseSta
 from swagger_client.models.management_logs_response import ManagementLogsResponse
 from swagger_client.models.management_max_workers import ManagementMaxWorkers
 from swagger_client.models.management_network_configuration import ManagementNetworkConfiguration
-from swagger_client.models.management_offline_mode import ManagementOfflineMode
 from swagger_client.models.management_persistent_workers import ManagementPersistentWorkers
 from swagger_client.models.management_persistent_workers_list import ManagementPersistentWorkersList
 from swagger_client.models.management_ping import ManagementPing

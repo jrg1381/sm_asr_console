@@ -55,6 +55,7 @@ class DockerServices(npyscreen.ActionFormV2):
         self.management_api = self.parentApp.management_api
         self.licensing_api = self.parentApp.licensing_api
         self.add_handlers({curses.KEY_F5: self.h_refresh})
+        self.add_handlers({'q': self.parentApp.switchFormPrevious})
         self.wg_service_list = self.add(DockerServiceList)
 
     def beforeEditing(self):
