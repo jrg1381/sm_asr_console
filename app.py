@@ -30,6 +30,7 @@ class ApplianceControlApp(npyscreen.NPSAppManaged):
         self.licensing_api = LicensingApi(api_client)
 
         self.keypress_timeout_default = 25
+        self.appliance_type = "RT"
 
     def onStart(self):
         self.addFormClass("ERROR", ErrorPopup)

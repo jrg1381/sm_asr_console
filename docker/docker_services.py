@@ -3,7 +3,7 @@ import npyscreen
 import curses
 from error_handler import error_handler
 
-log_entries = []
+current_service = None
 
 class LogViewerActionController(npyscreen.ActionControllerSimple):
     def create(self):
@@ -19,14 +19,20 @@ class LogViewer(npyscreen.FormMuttActiveTraditional):
     def __init__(self, *args, **kwargs):
         super(LogViewer, self).__init__(*args, **kwargs)
 
+    def h_refresh(self, data):
+        logs = self.parentApp.management_api.get_logs(current_service, count=-1)
+        log_entries = logs.log_lines.split('\n')
+        self.wMain.values = log_entries
+        self.wMain.display()
+
     def create(self):
         super().create()
+        self.add_handlers({curses.KEY_F5: self.h_refresh})
         self.add_handlers({'q': self.parentApp.switchFormPrevious})
         self.wStatus2.value = "'q' to quit. 'l' to search in text."
 
     def beforeEditing(self):
-        self.wMain.values = log_entries
-        self.wMain.display()
+        self.h_refresh(None)
 
 class DockerServiceList(npyscreen.MultiLineAction):
     def __init__(self, *args, **keywords):
@@ -34,13 +40,12 @@ class DockerServiceList(npyscreen.MultiLineAction):
 
     @error_handler("Management API")
     def actionHighlighted(self, act_on_this, key_press):
-        global log_entries
-        service_name = act_on_this.split()[0]
-        logs = self.parent.parentApp.management_api.get_logs(service_name, count=-1)
-        log_entries = logs.log_lines.split('\n')
+        global current_service
+        current_service = act_on_this.split()[0]
         self.parent.parentApp.switchForm("SERVICES/LOGVIEWER")
 
 class DockerServices(npyscreen.ActionFormV2):
+    @error_handler("Management API")
     def fetch_services(self):
         services = self.management_api.get_services()
         rows = []

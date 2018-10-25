@@ -3,7 +3,11 @@ import sys
 import re
 import curses
 import npyscreen
-from swagger_client.models import ManagementLicenseCode
+from os import environ
+from swagger_client.models import (ManagementLicenseCode,
+    ManagementOfflineMode,
+    ManagementProxyConfiguration,
+    ManagementNetworkConfiguration)
 from error_handler import error_handler
 
 API_ERROR_TEXT="API error (licensing api)"
@@ -23,6 +27,7 @@ class LicenseSubMenuList(npyscreen.MultiLineAction):
     def actionHighlighted(self, act_on_this, key_press):
         self.parent.parentApp.switchForm(self.form_index[act_on_this])  
 
+
 class LicenseField(npyscreen.TitleText):
     def __init__(self, *args, **keywords):
         super(LicenseField, self).__init__(*args, **keywords)
@@ -31,11 +36,6 @@ class LicenseField(npyscreen.TitleText):
         if not re.match(r"\d+$", self.value):
             self.value = re.sub(r'\D', "", self.value)
 
-    def safe_to_exit(self):
-        sys.exit(0)
-        if len(str(self.value)) > 20:
-            return False
-        return True
 
 class _BaseLicenseForm(npyscreen.ActionFormV2):
     @error_handler(title=API_ERROR_TEXT)
@@ -50,6 +50,7 @@ class _BaseLicenseForm(npyscreen.ActionFormV2):
             max_val = max(max_val, len(str(v)))
         for k, v in license.to_dict().items():
             retval.append(("{:<"+ str(max_key + 1) + "}{}").format(k, v))
+
         return retval
 
     def h_refresh(self, data):
@@ -69,7 +70,7 @@ class _BaseLicenseForm(npyscreen.ActionFormV2):
         self.parentApp.switchFormPrevious()
 
     def on_cancel(self):
-        self.parentApp.switchFormPrevious()     
+        self.parentApp.switchFormPrevious()
 
 class EditLicense(_BaseLicenseForm):
     def create(self):
@@ -91,24 +92,65 @@ class ReturnLicense(npyscreen.ActionPopup):
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
 
-class LicenseProxy(_BaseLicenseForm):
+
+class LicenseProxy(npyscreen.ActionPopup):
+    @error_handler(API_ERROR_TEXT)
+    def _fetch_proxy_settings(self):
+        return self.parentApp.licensing_api.get_network_configuration()
+
+    @error_handler(API_ERROR_TEXT)
+    def _apply_proxy_settings(self):
+        proxy_settings = ManagementProxyConfiguration(ip=self.wg_ip_address.value,
+                                                      port=int(self.wg_port.value or 0),
+                                                      user=self.wg_username.value,
+                                                      password=self.wg_password.value)
+        relay_settings = ManagementProxyConfiguration(ip="",
+                                                      port=0,
+                                                      user="",
+                                                      password="")
+
+        network_settings = ManagementNetworkConfiguration(http_configuration=proxy_settings,
+                                                          relay_configuration=relay_settings)
+
+        self.parentApp.licensing_api.set_network_configuration(network_settings)
+
     def create(self):
         super().create()
-        self.wg_text = self.add(npyscreen.TitleFixedText, rely=17, value="Configure license proxy")
+        self.wg_ip_address = self.add(npyscreen.TitleText, rely=2, name="Proxy IP address")
+        self.wg_port= self.add(npyscreen.TitleText, rely=4, name="Proxy port")
+        self.wg_username = self.add(npyscreen.TitleText, rely=6, name="Username (optional)")
+        self.wg_password = self.add(npyscreen.TitleText, rely=8, name="Password (optional)")
+
+    def beforeEditing(self):
+        proxy_settings = self._fetch_proxy_settings()
+        self.wg_ip_address.value = proxy_settings.http_configuration.ip
+        self.wg_port.value = str(proxy_settings.http_configuration.port)
+        self.wg_username.value = proxy_settings.http_configuration.user
+        self.wg_password.value = proxy_settings.http_configuration.password
+
+    def on_ok(self):
+        self._apply_proxy_settings()
+        self.parentApp.switchFormPrevious()
+
+    def on_cancel(self):
+        self.parentApp.switchFormPrevious()
+
 
 class LicenseOffline(npyscreen.ActionPopup):
     @error_handler(API_ERROR_TEXT)
     def configure_offline_mode(self):
-        # create request
-        self.parentApp.licensing_api.set_offline()
+        is_checked = self.wg_offline_option.value
+        request = ManagementOfflineMode(offline=is_checked)
+        self.parentApp.licensing_api.set_offline_mode(request)
 
     def create(self):
         self.add(npyscreen.MultiLine, values=["Choose OK to change offline licensing mode."], editable=False)
         self.wg_offline_option = self.add(npyscreen.CheckBox, name="Offline", values=("Offline",), rely=5)
 
+    @error_handler(API_ERROR_TEXT)
     def beforeEditing(self):
-        pass
-        # Get the current state to populate the checkbox
+        current_mode = self.parentApp.licensing_api.get_offline_mode()
+        self.wg_offline_option.value = current_mode.offline
 
     def on_ok(self):
         self.configure_offline_mode()
@@ -129,10 +171,14 @@ class ApplyLicense(_BaseLicenseForm):
 
     def create(self):
         super().create()
-        self.wg_license_code = self.add(LicenseField, rely=17, name="License code")
-        self.wg_username = self.add(npyscreen.TitleText, rely=19, name="User name")
-        self.wg_email = self.add(npyscreen.TitleText, rely=20, name="Email address")
-        self.wg_company = self.add(npyscreen.TitleText, rely=21, name="Company")
+        default_license_code = environ.get("DEFAULT_LICENSE_CODE")
+        default_username = environ.get("DEFAULT_USERNAME")
+        default_company = environ.get("DEFAULT_COMPANY")
+        default_email = environ.get("DEFAULT_EMAIL")
+        self.wg_license_code = self.add(LicenseField, rely=17, name="License code", value=default_license_code)
+        self.wg_username = self.add(npyscreen.TitleText, rely=19, name="User name", value=default_username)
+        self.wg_email = self.add(npyscreen.TitleText, rely=20, name="Email address", value=default_email)
+        self.wg_company = self.add(npyscreen.TitleText, rely=21, name="Company", value=default_company)
 
     def on_ok(self):
         self._apply_license()
