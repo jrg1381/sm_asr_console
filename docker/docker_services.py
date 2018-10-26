@@ -19,6 +19,7 @@ class LogViewer(npyscreen.FormMuttActiveTraditional):
     def __init__(self, *args, **kwargs):
         super(LogViewer, self).__init__(*args, **kwargs)
 
+    @error_handler("Management API")
     def h_refresh(self, data):
         logs = self.parentApp.management_api.get_logs(current_service, count=-1)
         log_entries = logs.log_lines.split('\n')
