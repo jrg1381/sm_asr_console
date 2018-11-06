@@ -2,9 +2,11 @@
 import npyscreen
 from enum import Enum
 
+
 class DialogType(Enum):
     CONFIRM = npyscreen.notify_confirm
     BRIEF = npyscreen.notify_wait
+
 
 # PythonDecorators/decorator_function_with_arguments.py
 def error_handler(title, dialog_type=DialogType.CONFIRM):

@@ -10,14 +10,15 @@ class NetworkSubMenuList(npyscreen.MultiLineAction):
     def __init__(self, *args, **keywords):
         super(NetworkSubMenuList, self).__init__(*args, **keywords)
         # Map from the text on screen to the name of the sub-form
-        self.form_index = { 
-            "Use DHCP" : "NETWORK/DHCP",
+        self.form_index = {
+            "Use DHCP": "NETWORK/DHCP",
             "Configure static IP": "NETWORK/STATIC_IP",
-            }
+        }
         self.values = list(self.form_index.keys())
-            
+
     def actionHighlighted(self, act_on_this, key_press):
-        self.parent.parentApp.switchForm(self.form_index[act_on_this])  
+        self.parent.parentApp.switchForm(self.form_index[act_on_this])
+
 
 class NetworkDhcp(npyscreen.ActionPopup):
     @error_handler("Management API")
@@ -25,7 +26,8 @@ class NetworkDhcp(npyscreen.ActionPopup):
         self.parentApp.management_api.set_dhcp()
 
     def create(self):
-        self.add(npyscreen.MultiLine, values=["Choose OK to enable DHCP networking.", "The system will restart."], editable=False)
+        self.add(npyscreen.MultiLine, values=["Choose OK to enable DHCP networking.", "The system will restart."],
+                 editable=False)
 
     def on_ok(self):
         self.enable_dhcp()
@@ -33,6 +35,7 @@ class NetworkDhcp(npyscreen.ActionPopup):
 
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
+
 
 class EditNetwork(npyscreen.ActionFormV2):
     def create(self):
@@ -45,7 +48,8 @@ class EditNetwork(npyscreen.ActionFormV2):
         self.parentApp.switchFormPrevious()
 
     def on_cancel(self):
-        self.parentApp.switchFormPrevious()  
+        self.parentApp.switchFormPrevious()
+
 
 class NetworkStatic(npyscreen.ActionPopup):
     @error_handler("Management API")

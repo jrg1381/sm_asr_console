@@ -20,21 +20,21 @@ class MainMenu(npyscreen.ActionFormV2):
 
     @error_handler("API exception")
     def populate_status(self):
-        self.status_bar.entry_widget.values = ["????",]
+        self.status_bar.entry_widget.values = ["????", ]
 
         version = self.management_api.about()
-        license = self.licensing_api.get_license()
+        sm_license = self.licensing_api.get_license()
         free_space = self.management_api.get_free_storage()
 
         self.status_bar.entry_widget.values = [
             "{:<16}{}".format("Version", version.version),
-            "{:<16}{}".format("License status", license.status),
-            "{:<16}{}".format("License code", license.license_code),
-            "{:<16}{}".format("Licensed", license.licensed)
+            "{:<16}{}".format("License status", sm_license.status),
+            "{:<16}{}".format("License code", sm_license.license_code),
+            "{:<16}{}".format("Licensed", sm_license.licensed)
         ]
         for entry in free_space.items:
             self.status_bar.entry_widget.values.append(
-            "{:<16}{} -> {}".format("Disk free ", entry.path, entry.bytes)
+                "{:<16}{} -> {}".format("Disk free ", entry.path, entry.bytes)
             )
 
     @staticmethod
@@ -93,11 +93,15 @@ class MainMenu(npyscreen.ActionFormV2):
         self.add_handlers({curses.KEY_F5: self.h_refresh})
 
         centred_title = ("{:^" + str(columns) + "}").format(APP_NAME)
-        self.title = self.add(npyscreen.FixedText, name=APP_NAME, value=centred_title, editable=False, relx=1, rely=1, width=int(columns))
+        self.title = self.add(npyscreen.FixedText, name=APP_NAME, value=centred_title, editable=False, relx=1, rely=1,
+                              width=int(columns))
         self.wg_options = self.add(MainMenuList, name="main_menu", max_width=12, rely=2)
-        self.system_status_bar = self.add(npyscreen.BoxTitle, name="System status", editable=False, rely=2, relx=14, max_height=4)
-        self.network_status_bar = self.add(NetInterfacesWidget, name="Network status", editable=False, rely=6, relx=14, max_height=8)
-        self.status_bar = self.add(npyscreen.BoxTitle, name="ASR status", editable=False, relx=14, rely=14, max_height=8)
+        self.system_status_bar = self.add(npyscreen.BoxTitle, name="System status", editable=False, rely=2, relx=14,
+                                          max_height=4)
+        self.network_status_bar = self.add(NetInterfacesWidget, name="Network status", editable=False, rely=6, relx=14,
+                                           max_height=8)
+        self.status_bar = self.add(npyscreen.BoxTitle, name="ASR status", editable=False, relx=14, rely=14,
+                                   max_height=8)
         self.nextrely += 1
 
     def beforeEditing(self):
@@ -111,6 +115,7 @@ class MainMenu(npyscreen.ActionFormV2):
 
     def while_waiting(self):
         self.update_safe_status()
+
 
 class Reboot(npyscreen.ActionPopup):
     @error_handler("API Error (management_api)")
@@ -127,6 +132,7 @@ class Reboot(npyscreen.ActionPopup):
 
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
+
 
 class Shutdown(npyscreen.ActionPopup):
     @error_handler("API Error (management_api)")

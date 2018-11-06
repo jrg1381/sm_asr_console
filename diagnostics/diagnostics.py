@@ -12,6 +12,7 @@ class DiagnosticsActionController(npyscreen.ActionControllerSimple):
     def quit(self, command_line, widget_proxy, live):
         self.parent.parentApp.switchFormPrevious()
 
+
 class DiagnosticsForm(npyscreen.FormMuttActiveTraditionalWithMenus):
     ACTION_CONTROLLER = DiagnosticsActionController
 

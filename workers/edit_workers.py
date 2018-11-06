@@ -3,7 +3,8 @@ import npyscreen
 from error_handler import error_handler
 from swagger_client.models import ManagementMaxWorkers, ManagementPersistentWorkersList
 
-API_ERROR_TEXT="API error (management_api)"
+API_ERROR_TEXT = "API error (management_api)"
+
 
 class EditWorkers(npyscreen.ActionFormV2):
     @error_handler(title=API_ERROR_TEXT)
@@ -16,7 +17,7 @@ class EditWorkers(npyscreen.ActionFormV2):
         return self.management_api.get_persistent_workers()
 
     @error_handler(title=API_ERROR_TEXT)
-    def _modify_worker_count_unchecked(self, value) ->bool:
+    def _modify_worker_count_unchecked(self, value) -> bool:
         request = ManagementMaxWorkers(count=value)
         response = self.management_api.set_max_workers(request)
         return response.count == value

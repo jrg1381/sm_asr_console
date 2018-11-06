@@ -5,27 +5,28 @@ import curses
 import npyscreen
 from os import environ
 from swagger_client.models import (ManagementLicenseCode,
-    ManagementOfflineMode,
-    ManagementProxyConfiguration,
-    ManagementNetworkConfiguration)
+                                   ManagementOfflineMode,
+                                   ManagementProxyConfiguration,
+                                   ManagementNetworkConfiguration)
 from error_handler import error_handler
 
-API_ERROR_TEXT="API error (licensing api)"
+API_ERROR_TEXT = "API error (licensing api)"
+
 
 class LicenseSubMenuList(npyscreen.MultiLineAction):
     def __init__(self, *args, **keywords):
         super(LicenseSubMenuList, self).__init__(*args, **keywords)
         # Map from the text on screen to the name of the sub-form
-        self.form_index = { 
-            "Apply license" : "LICENSE/APPLY",
+        self.form_index = {
+            "Apply license": "LICENSE/APPLY",
             "Return license": "LICENSE/RETURN",
             "Go offline": "LICENSE/OFFLINE",
             "Configure proxy settings": "LICENSE/PROXY"
-            }
+        }
         self.values = list(self.form_index.keys())
-            
+
     def actionHighlighted(self, act_on_this, key_press):
-        self.parent.parentApp.switchForm(self.form_index[act_on_this])  
+        self.parent.parentApp.switchForm(self.form_index[act_on_this])
 
 
 class LicenseField(npyscreen.TitleText):
@@ -44,12 +45,12 @@ class _BaseLicenseForm(npyscreen.ActionFormV2):
         # Maximum widths of keys and values
         max_key = 0
         max_val = 0
-        license = self.licensing_api.get_license()
-        for k, v in license.to_dict().items():
+        sm_license = self.licensing_api.get_license()
+        for k, v in sm_license.to_dict().items():
             max_key = max(max_key, len(str(k)))
             max_val = max(max_val, len(str(v)))
-        for k, v in license.to_dict().items():
-            retval.append(("{:<"+ str(max_key + 1) + "}{}").format(k, v))
+        for k, v in sm_license.to_dict().items():
+            retval.append(("{:<" + str(max_key + 1) + "}{}").format(k, v))
 
         return retval
 
@@ -72,10 +73,12 @@ class _BaseLicenseForm(npyscreen.ActionFormV2):
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
 
+
 class EditLicense(_BaseLicenseForm):
     def create(self):
         super().create()
         self.wg_license_options = self.add(LicenseSubMenuList, rely=17)
+
 
 class ReturnLicense(npyscreen.ActionPopup):
     @error_handler(API_ERROR_TEXT)
@@ -117,7 +120,7 @@ class LicenseProxy(npyscreen.ActionPopup):
     def create(self):
         super().create()
         self.wg_ip_address = self.add(npyscreen.TitleText, rely=2, name="Proxy IP address")
-        self.wg_port= self.add(npyscreen.TitleText, rely=4, name="Proxy port")
+        self.wg_port = self.add(npyscreen.TitleText, rely=4, name="Proxy port")
         self.wg_username = self.add(npyscreen.TitleText, rely=6, name="Username (optional)")
         self.wg_password = self.add(npyscreen.TitleText, rely=8, name="Password (optional)")
 
@@ -159,8 +162,9 @@ class LicenseOffline(npyscreen.ActionPopup):
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
 
+
 class ApplyLicense(_BaseLicenseForm):
-    @error_handler(title=API_ERROR_TEXT)   
+    @error_handler(title=API_ERROR_TEXT)
     def _apply_license(self):
         request = ManagementLicenseCode(
             username=self.wg_username.value,

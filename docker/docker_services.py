@@ -5,12 +5,14 @@ from error_handler import error_handler
 
 current_service = None
 
+
 class LogViewerActionController(npyscreen.ActionControllerSimple):
     def create(self):
         self.add_action(r'^:q', self.quit, False)
     
     def quit(self, command_line, widget_proxy, live):
         self.parent.parentApp.switchFormPrevious()
+
 
 class LogViewer(npyscreen.FormMuttActiveTraditional):
     ACTION_CONTROLLER = LogViewerActionController
@@ -34,6 +36,7 @@ class LogViewer(npyscreen.FormMuttActiveTraditional):
     def beforeEditing(self):
         self.h_refresh(None)
 
+
 class DockerServiceList(npyscreen.MultiLineAction):
     def __init__(self, *args, **keywords):
         super(DockerServiceList, self).__init__(*args, **keywords)
@@ -43,6 +46,7 @@ class DockerServiceList(npyscreen.MultiLineAction):
         global current_service
         current_service = act_on_this.split()[0]
         self.parent.parentApp.switchForm("SERVICES/LOGVIEWER")
+
 
 class DockerServices(npyscreen.ActionFormV2):
     @error_handler("Management API")
