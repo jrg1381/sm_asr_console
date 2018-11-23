@@ -38,6 +38,8 @@ class EditWorkers(npyscreen.ActionFormV2):
     def create(self):
         self.management_api = self.parentApp.management_api
         self.wg_max_workers = self.add(npyscreen.TitleText, width=80, name="Max workers", rely=2)
+        if self.parentApp.appliance_type == "RT":
+            self.wg_persistent_workers = self.add(npyscreen.TitleMultiLine, rely=3, name="Persistent workers", editable=False)
 
     def on_ok(self):
         if self._modify_worker_count():
