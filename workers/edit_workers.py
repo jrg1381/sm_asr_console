@@ -14,13 +14,15 @@ class EditWorkers(npyscreen.ActionFormV2):
 
     @error_handler(title=API_ERROR_TEXT)
     def _fetch_persistent_workers(self) -> ManagementPersistentWorkersList:
-        return self.management_api.get_persistent_workers()
+        workers = self.management_api.get_persistent_workers()
+        return workers.to_dict()['persistent_workers']
 
     @error_handler(title=API_ERROR_TEXT)
     def _modify_worker_count_unchecked(self, value) -> bool:
         request = ManagementMaxWorkers(count=value)
         response = self.management_api.set_max_workers(request)
-        return response.count == value
+        # BRYN!!
+        return response.count == str(value)
 
     def _modify_worker_count(self):
         try:
@@ -35,9 +37,7 @@ class EditWorkers(npyscreen.ActionFormV2):
 
     def create(self):
         self.management_api = self.parentApp.management_api
-        self.wg_max_workers = self.add(npyscreen.TitleText, width=80, name="Max workers")
-        if self.parentApp.appliance_type == "RT":
-            self.wg_persistent_workers = self.add(npyscreen.MultiLine, name="Persistent workers", editable=False)
+        self.wg_max_workers = self.add(npyscreen.TitleText, width=80, name="Max workers", rely=2)
 
     def on_ok(self):
         if self._modify_worker_count():
@@ -46,8 +46,11 @@ class EditWorkers(npyscreen.ActionFormV2):
     def beforeEditing(self):
         self.wg_max_workers.value = self._fetch_max_workers() or "??"
         if self.parentApp.appliance_type == "RT":
+            idx = 0
             for worker in self._fetch_persistent_workers() or []:
-                self.wg_persistent_workers.values.append("{} -> {}", worker.id, worker.count)
+                entry = self.add(npyscreen.TitleText, name=worker['id'], rely=4+idx)
+                entry.value = worker['count']
+                idx = idx + 1
 
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
