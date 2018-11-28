@@ -14,8 +14,17 @@ class EditWorkers(npyscreen.ActionFormV2):
 
     @error_handler(title=API_ERROR_TEXT)
     def _fetch_persistent_workers(self) -> ManagementPersistentWorkersList:
-        workers = self.management_api.get_persistent_workers()
-        return workers.to_dict()['persistent_workers']
+        self.workers = self.management_api.get_persistent_workers()
+
+    @error_handler(title=API_ERROR_TEXT)
+    def _modify_persistent_workers(self):
+        persistent_workers = []
+        for worker_id, widget in self.wg_persistent_workers.items():
+            persistent_workers.append({'id': worker_id, 'count': str(widget.value)})
+
+        new_workers = ManagementPersistentWorkersList(persistent_workers=persistent_workers)
+        self.workers = self.management_api.set_persistent_workers(new_workers)
+        return True
 
     @error_handler(title=API_ERROR_TEXT)
     def _modify_worker_count_unchecked(self, value) -> bool:
@@ -39,20 +48,31 @@ class EditWorkers(npyscreen.ActionFormV2):
         self.management_api = self.parentApp.management_api
         self.wg_max_workers = self.add(npyscreen.TitleText, width=80, name="Max workers", rely=2)
         if self.parentApp.appliance_type == "RT":
-            self.wg_persistent_workers = self.add(npyscreen.TitleMultiLine, rely=3, name="Persistent workers", editable=False)
+            self.add(npyscreen.TitleMultiLine, rely=3, name="Persistent workers", editable=False)
+            self.wg_persistent_workers = {}
+            idx = 0
+            self._fetch_persistent_workers()
+            if not self.workers:
+                return
+            for worker in self.workers.to_dict()['persistent_workers']:
+                entry = self.add(npyscreen.TitleText, name=worker['id'], rely=4+idx)
+                entry.value = worker['count']
+                idx = idx + 1
+                self.wg_persistent_workers[worker['id']] = entry
 
     def on_ok(self):
-        if self._modify_worker_count():
+        if self._modify_worker_count() and self._modify_persistent_workers():
             self.parentApp.switchFormPrevious()
 
     def beforeEditing(self):
         self.wg_max_workers.value = self._fetch_max_workers() or "??"
         if self.parentApp.appliance_type == "RT":
-            idx = 0
-            for worker in self._fetch_persistent_workers() or []:
-                entry = self.add(npyscreen.TitleText, name=worker['id'], rely=4+idx)
+            self._fetch_persistent_workers()
+            if not self.workers:
+                return
+            for worker in self.workers.to_dict()['persistent_workers']:
+                entry = self.wg_persistent_workers[worker['id']]
                 entry.value = worker['count']
-                idx = idx + 1
 
     def on_cancel(self):
         self.parentApp.switchFormPrevious()
