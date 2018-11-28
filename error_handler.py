@@ -18,4 +18,4 @@ def error_handler(title, dialog_type=DialogType.CONFIRM):
                 dialog_type(str(e), title)
                 return None
         return wrapped_f
-    return wrap 
+    return wrap

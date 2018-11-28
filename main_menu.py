@@ -62,7 +62,7 @@ class MainMenu(npyscreen.ActionFormV2):
             self.management_api.about()
             self.ping_message = "API responding"
             self.last_successful_ping = datetime.datetime.utcnow()
-        except:
+        except:  # noqa: E722
             if self.last_successful_ping:
                 since_good_ping = (datetime.datetime.utcnow() - self.last_successful_ping).total_seconds()
                 self.ping_message = "API not responding for {}s".format(int(since_good_ping))

@@ -9,7 +9,7 @@ current_service = None
 class LogViewerActionController(npyscreen.ActionControllerSimple):
     def create(self):
         self.add_action(r'^:q', self.quit, False)
-    
+
     def quit(self, command_line, widget_proxy, live):
         self.parent.parentApp.switchFormPrevious()
 
@@ -75,4 +75,4 @@ class DockerServices(npyscreen.ActionFormV2):
         self.parentApp.switchFormPrevious()
 
     def on_cancel(self):
-        self.parentApp.switchFormPrevious()  
+        self.parentApp.switchFormPrevious()

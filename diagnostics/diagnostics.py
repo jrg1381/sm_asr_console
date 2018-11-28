@@ -8,7 +8,7 @@ from error_handler import error_handler
 class DiagnosticsActionController(npyscreen.ActionControllerSimple):
     def create(self):
         self.add_action(r'^:q', self.quit, False)
-    
+
     def quit(self, command_line, widget_proxy, live):
         self.parent.parentApp.switchFormPrevious()
 
