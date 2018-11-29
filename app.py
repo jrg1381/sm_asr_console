@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+""" Main application class. Entrypoint is here. """
+
 import os
 import npyscreen
 from license.edit_license import (
@@ -20,6 +22,7 @@ from swagger_client import ApiClient, Configuration, ManagementApi, LicensingApi
 
 
 class ApplianceControlApp(npyscreen.NPSAppManaged):
+    """ Class to initialize the application and invisibly create the forms """
     def __init__(self, *args, **keywords):
         super(ApplianceControlApp, self).__init__(*args, **keywords)
         api_client_config = Configuration()

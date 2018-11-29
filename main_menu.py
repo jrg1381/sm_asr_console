@@ -1,4 +1,6 @@
 # encoding: utf-8
+
+""" Main menu """
 import sys
 import os
 import datetime
@@ -11,8 +13,11 @@ from widgets.net_interfaces_widget import NetInterfacesWidget
 
 APP_NAME = "{} ASR".format(os.environ.get("APP_NAME", "Speechmatics"))
 
+# pylint:  disable=too-many-ancestors
+
 
 class MainMenu(npyscreen.ActionFormV2):
+    """ Main menu form """
     def __init__(self, *args, **kwargs):
         super(MainMenu, self).__init__(*args, **kwargs)
         self.ping_message = "?????"
@@ -20,6 +25,7 @@ class MainMenu(npyscreen.ActionFormV2):
 
     @error_handler("API exception")
     def populate_status(self):
+        """ Fill in the status widget """
         self.status_bar.entry_widget.values = ["????", ]
 
         version = self.management_api.about()
@@ -53,6 +59,7 @@ class MainMenu(npyscreen.ActionFormV2):
         raise TypeError("target must be a callable, not {!r}".format(type(target)))
 
     def set_ping_message(self):
+        """ Ping the API and set the ping message describing the result """
         try:
             if self.last_successful_ping:
                 since_last_ping = (datetime.datetime.utcnow() - self.last_successful_ping).total_seconds()
@@ -62,7 +69,7 @@ class MainMenu(npyscreen.ActionFormV2):
             self.management_api.about()
             self.ping_message = "API responding"
             self.last_successful_ping = datetime.datetime.utcnow()
-        except:  # noqa: E722
+        except Exception:  # pylint: disable=broad-except
             if self.last_successful_ping:
                 since_good_ping = (datetime.datetime.utcnow() - self.last_successful_ping).total_seconds()
                 self.ping_message = "API not responding for {}s".format(int(since_good_ping))
@@ -70,6 +77,11 @@ class MainMenu(npyscreen.ActionFormV2):
                 self.ping_message("No responses from API since start")
 
     def update_safe_status(self):
+        """
+        Update those parts of the status which don't depend on the remote end working.
+        Because we know these operations can be done safely without throwing up an error,
+        they can be done repeatedly in a loop.
+        """
         now_utc = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).replace(microsecond=0).isoformat()
         self.call_in_background(self.set_ping_message)
 
@@ -80,13 +92,21 @@ class MainMenu(npyscreen.ActionFormV2):
         self.network_status_bar.entry_widget.update()
         self.system_status_bar.entry_widget.update()
 
-    def h_refresh(self, data):
+    def h_refresh(self, data):  # pylint: disable=unused-argument
+        """
+        Refresh the main menu display.
+        Try to avoid calling this too often as the npyscreen docs warn against it.
+        """
         self.populate_status()
         self.display()
         self.wg_options.update()
 
     def create(self):
-        columns = curses.COLS
+        """
+        Create the main menu, initialize the swagger clients
+        """
+        # The member is added dynamically
+        columns = curses.COLS  # pylint: disable=no-member
         self.management_api = self.parentApp.management_api
         self.licensing_api = self.parentApp.licensing_api
 
@@ -104,39 +124,53 @@ class MainMenu(npyscreen.ActionFormV2):
                                    max_height=8)
         self.nextrely += 1
 
-    def beforeEditing(self):
+    def beforeEditing(self):  # pylint: disable=invalid-name
+        """ Called after the screen is created but before editing is allowed """
         self.populate_status()
 
     def on_ok(self):
+        """ Quit app on OK """
         sys.exit(0)
 
     def on_cancel(self):
+        """ Quit app on cancel (TODO: remove cancel button from main screen only) """
         sys.exit(0)
 
     def while_waiting(self):
+        """ Run on a timer to update the status """
         self.update_safe_status()
 
 
 class Reboot(npyscreen.ActionPopup):
+    """ Pop-up menu defining the reboot confirmation screen """
     @error_handler("API Error (management_api)")
     def reboot(self):
-        # if remote host, use api, if localhost, use real system function
+        """
+        If remote host, use api, if localhost, use real system function (TODO)
+        """
         self.parentApp.management_api.hard_reboot()
 
     def create(self):
+        """ Initialize the popup """
         self.add(npyscreen.MultiLine, values=["Choose OK to reboot the system."], editable=False)
 
     def on_ok(self):
+        """ OK selected, reboot the system """
         self.reboot()
         self.parentApp.switchFormPrevious()
 
     def on_cancel(self):
+        """ Cancel selected, return to previous form """
         self.parentApp.switchFormPrevious()
 
 
 class Shutdown(npyscreen.ActionPopup):
+    """ Popup menu defining the shutdown confirmation screen """
     @error_handler("API Error (management_api)")
     def shutdown(self):
+        """
+        Shutdown the system using the API or the local shutdown command
+        """
         self.parentApp.management_api.hard_shutdown()
 
     def create(self):
