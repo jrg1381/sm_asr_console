@@ -1,7 +1,10 @@
 container:
-	docker build -t sm_asr_console_builder -f Dockerfile .
+	docker build -t sm_asr_console --target base -f Dockerfile .
 
-lint: container
+test_container:
+	docker build -t sm_asr_console_builder --target sm_asr_console_builder -f Dockerfile .
+
+lint: test_container
 	docker run --rm -it --entrypoint=make sm_asr_console_builder lint_local
 
 lint_local:

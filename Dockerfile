@@ -15,9 +15,8 @@ RUN pip3 install -r requirements.txt
 COPY . /src
 ENTRYPOINT python3 /src/app.py
 
-FROM python:3.6.6-jessie as sm_asr_console_builder
+FROM base as sm_asr_console_builder
 RUN apt-get update && apt-get install -y make
-COPY --from=base /src /src
 COPY requirements-dev.txt /src/requirements-dev.txt
 WORKDIR /src
-RUN pip3 install -r requirements.txt -r requirements-dev.txt
+RUN pip3 install -r requirements-dev.txt
