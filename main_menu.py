@@ -14,6 +14,7 @@ from widgets.net_interfaces_widget import NetInterfacesWidget
 APP_NAME = "{} ASR".format(os.environ.get("APP_NAME", "Speechmatics"))
 
 # pylint:  disable=too-many-ancestors
+# pylint:  disable=too-many-instance-attributes
 
 
 class MainMenu(npyscreen.ActionFormV2):

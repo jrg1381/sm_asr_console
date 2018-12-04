@@ -17,5 +17,5 @@ fast_lint:
 
 .PHONY: lint_local
 lint_local:
-	pycodestyle --max-line-length=120 --exclude="swagger_client*" /src
-	pylint --max-line-length=120 --ignore="swagger_client" /src
+	pycodestyle --exclude="swagger_client*" /src
+	pylint --ignore="swagger_client" /src
